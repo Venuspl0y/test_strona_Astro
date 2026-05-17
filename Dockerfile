@@ -10,9 +10,9 @@ RUN npm install
 
 # 2. Usuwamy wadliwą wtyczkę i instalujemy stabilną wersję PostCSS dla Tailwind v4
 RUN npm uninstall @tailwindcss/vite
-RUN npm install @tailwindcss/postcss postcss Autoprefixer
+RUN npm install @tailwindcss/postcss postcss autoprefixer
 
-# 3. Tworzymy w locie plik konfiguracyjny postcss.config.mjs, aby Astro automatycznie przetworzyło CSS
+# 3. Tworzymy w locie plik konfiguracyjny postcss.config.mjs
 RUN echo "export default { plugins: { '@tailwindcss/postcss': {}, autoprefixer: {} } }" > postcss.config.mjs
 
 # Kopiujemy resztę kodu i budujemy stronę
