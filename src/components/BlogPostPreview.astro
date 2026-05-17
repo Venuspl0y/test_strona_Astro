@@ -11,7 +11,7 @@ const { post } = Astro.props;
 const url = "/blog/post/" + getSlugFromPath(post.file);
 
 const date = parseISO(post.frontmatter.date);
-const formattedDate = format(date, "MMM d, yyyy");
+const formattedDate = format(date, "dd/MM/yyyy");
 ---
 
 <a

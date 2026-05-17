@@ -5,7 +5,7 @@ import BlogPostPreview from "../../components/BlogPostPreview.astro";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 
 const siteTitle = "blog";
-const description = "Thought dumps and nerdy stuff";
+const description = "Takie tam wypociny";
 
 const allPosts = Object.values(
   import.meta.glob<BlogPost>("../../content/posts/*.md", { eager: true }),
@@ -27,7 +27,7 @@ const sortedPosts = allPosts
     >
       <h1 class="text-text text-2xl tracking-tight">blog</h1>
       <p class="text-muted mt-2 text-sm">
-        thoughts on tech and content. usually goes to twitter, sometimes here.
+        Takie tam wypociny na ciekawe tematy..
       </p>
     </header>
 
