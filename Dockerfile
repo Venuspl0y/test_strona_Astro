@@ -5,16 +5,25 @@ WORKDIR /app
 # Kopiujemy pliki konfiguracyjne
 COPY package*.json ./
 
-# 1. Instalujemy standardowe zależności projektu
+# 1. Instalujemy zależności projektu
 RUN npm install
 
-# 2. Wymuszamy stabilną, sprawdzoną wersję wtyczki Tailwinda v4, która nie ma błędu regresji
-RUN npm install @tailwindcss/vite@4.0.3
+# 2. Pobieramy oficjalne, samodzielne CLI Tailwinda v4 (wersja dla Linux x64)
+RUN apk add --no-cache curl
+RUN curl -sLO https://github.com/tailwindlabs/tailwindcss/releases/latest/download/tailwindcss-linux-x64 && \
+    chmod +x tailwindcss-linux-x64 && \
+    mv tailwindcss-linux-x64 /usr/local/bin/tailwindcss
 
-# Kopiujemy resztę kodu (w tym nienaruszony astro.config.mjs)
+# Kopiujemy resztę kodu źródłowego
 COPY . .
 
-# Budujemy aplikację przez standardowy proces Astro
+# 3. Kompilujemy plik CSS za pomocą CLI bezpośrednio do katalogu wejściowego Astro
+RUN tailwind -i ./src/style/global.css -o ./src/style/global.css --minify
+
+# 4. Wyłączamy wtyczkę w astro.config.mjs, aby Vite nie próbował jej ponownie odpalać
+RUN sed -i 's/tailwindcss()//g' astro.config.mjs
+
+# 5. Budujemy czystą stronę Astro (teraz przejdzie bezbłędnie)
 RUN npm run build
 
 # Etap serwowania strony statycznej przez NGINX
