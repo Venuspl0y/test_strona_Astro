@@ -5,17 +5,25 @@ WORKDIR /app
 # Kopiujemy pliki konfiguracyjne
 COPY package*.json ./
 
-# 1. Instalujemy standardowe zależności
+# 1. Instalujemy standardowe zależności (w tym oryginalne paczki)
 RUN npm install
 
-# 2. Nadpisujemy zbugowane wersje instalując stabilne, zsynchronizowane wersje z linii Vite 6.0
-RUN npm install vite@6.0.11 @tailwindcss/vite@4.0.0 rolldown@1.0.0-beta.3
+# 2. Dogrywamy stabilny kompilator PostCSS dla Tailwind v4
+RUN npm install @tailwindcss/postcss postcss autoprefixer
 
-# Kopiujemy resztę kodu i budujemy stronę
+# 3. Tworzymy plik konfiguracyjny postcss.config.mjs
+RUN echo "export default { plugins: { '@tailwindcss/postcss': {}, autoprefixer: {} } }" > postcss.config.mjs
+
+# Kopiujemy kod projektu
 COPY . .
+
+# 4. Magiczny krok: Wyłączamy wadliwą wtyczkę w astro.config.mjs i zastępujemy ją pustą tablicą
+RUN sed -i 's/tailwind()//g' astro.config.mjs
+
+# Budujemy stronę (teraz Astro automatycznie użyje stabilnego PostCSS)
 RUN npm run build
 
-# Etap serwowania strony statycznej za pomocą lekkiego serwera NGINX
+# Etap serwowania strony statycznej przez NGINX
 FROM nginx:alpine
 COPY --from=build /app/dist /usr/share/nginx/html
 
