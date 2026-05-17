@@ -14,13 +14,16 @@ RUN npm install -D @tailwindcss/cli
 # Kopiujemy całą resztę kodu
 COPY . .
 
-# 3. Kompilujemy CSS za pomocą lokalnego CLI bezpośrednio nadpisując plik wejściowy
-RUN npx tailwindcss -i ./src/style/global.css -o ./src/style/global.css --minify
+# 3. Kompilujemy CSS z global.css do osobnego pliku compiled.css
+RUN npx tailwindcss -i ./src/style/global.css -o ./src/style/compiled.css --minify
 
-# 4. Wycinamy wywołanie tailwindcss() z pliku konfiguracyjnego Astro, by Vite go nie dotykał
+# 4. Magiczny krok: Podmieniamy import w plikach projektu, aby Astro ładowało gotowy plik CSS
+RUN find src/ -type f \( -name "*.astro" -o -name "*.ts" -o -name "*.js" \) -exec sed -i 's/global.css/compiled.css/g' {} +
+
+# 5. Wycinamy wywołanie tailwindcss() z pliku konfiguracyjnego Astro, by Vite go nie dotykał
 RUN sed -i 's/tailwindcss()//g' astro.config.mjs
 
-# 5. Budujemy gotową statyczną stronę Astro
+# 6. Budujemy gotową statyczną stronę Astro
 RUN npm run build
 
 # Etap serwowania strony statycznej przez NGINX
