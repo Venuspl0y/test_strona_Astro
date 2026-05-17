@@ -8,12 +8,8 @@ COPY package*.json ./
 # 1. Instalujemy standardowe zależności
 RUN npm install
 
-# 2. Usuwamy wadliwą wtyczkę i instalujemy stabilną wersję PostCSS dla Tailwind v4
-RUN npm uninstall @tailwindcss/vite
-RUN npm install @tailwindcss/postcss postcss autoprefixer
-
-# 3. Tworzymy w locie plik konfiguracyjny postcss.config.mjs
-RUN echo "export default { plugins: { '@tailwindcss/postcss': {}, autoprefixer: {} } }" > postcss.config.mjs
+# 2. Nadpisujemy zbugowane wersje instalując stabilne, zsynchronizowane wersje z linii Vite 6.0
+RUN npm install vite@6.0.11 @tailwindcss/vite@4.0.0 rolldown@1.0.0-beta.3
 
 # Kopiujemy resztę kodu i budujemy stronę
 COPY . .
