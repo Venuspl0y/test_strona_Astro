@@ -5,26 +5,16 @@ WORKDIR /app
 # Kopiujemy pliki konfiguracyjne
 COPY package*.json ./
 
-# 1. Brutalnie usuwamy zepsutą wtyczkę z pliku package.json przed instalacją
-RUN sed -i '/"@tailwindcss\/vite"/d' package.json
-
-# 2. Instalujemy czyste zależności projektu (bez zepsutej wtyczki)
+# 1. Instalujemy standardowe zależności projektu
 RUN npm install
 
-# 3. Instalujemy w 100% stabilną, oficjalną integrację PostCSS dla Tailwind v4
-RUN npm install @tailwindcss/postcss postcss autoprefixer
+# 2. Wymuszamy stabilną, sprawdzoną wersję wtyczki Tailwinda v4, która nie ma błędu regresji
+RUN npm install @tailwindcss/vite@4.0.3
 
-# 4. Tworzymy w locie plik konfiguracyjny postcss.config.mjs
-RUN echo "export default { plugins: { '@tailwindcss/postcss': {}, autoprefixer: {} } }" > postcss.config.mjs
-
-# Kopiujemy resztę kodu
+# Kopiujemy resztę kodu (w tym nienaruszony astro.config.mjs)
 COPY . .
 
-# 5. Czyścimy plik konfiguracyjny Astro z importów i wywołań starej wtyczki
-RUN sed -i '/@tailwindcss\/vite/d' astro.config.mjs
-RUN sed -i 's/tailwind()//g' astro.config.mjs
-
-# Budujemy stronę przez stabilne PostCSS
+# Budujemy aplikację przez standardowy proces Astro
 RUN npm run build
 
 # Etap serwowania strony statycznej przez NGINX
