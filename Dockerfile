@@ -5,9 +5,15 @@ WORKDIR /app
 # Kopiujemy pliki konfiguracyjne
 COPY package*.json ./
 
-# Sposób na zepsuty konflikt Rolldown/Tailwind: wymuszamy instalację najnowszych stabilnych wersji tych paczek
+# 1. Instalujemy standardowe zależności
 RUN npm install
-RUN npm install @tailwindcss/vite@latest vite@latest rolldown@latest
+
+# 2. Usuwamy wadliwą wtyczkę i instalujemy stabilną wersję PostCSS dla Tailwind v4
+RUN npm uninstall @tailwindcss/vite
+RUN npm install @tailwindcss/postcss postcss Autoprefixer
+
+# 3. Tworzymy w locie plik konfiguracyjny postcss.config.mjs, aby Astro automatycznie przetworzyło CSS
+RUN echo "export default { plugins: { '@tailwindcss/postcss': {}, autoprefixer: {} } }" > postcss.config.mjs
 
 # Kopiujemy resztę kodu i budujemy stronę
 COPY . .
@@ -17,6 +23,5 @@ RUN npm run build
 FROM nginx:alpine
 COPY --from=build /app/dist /usr/share/nginx/html
 
-# Informujemy o porcie (standardowy port HTTP dla NGINX to 80)
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
